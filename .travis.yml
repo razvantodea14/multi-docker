@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t razvantodea14/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true razvantodea14/react-test npm test
+
+after_success:
+  - docker build -t razvantodea14/multi-client ./client
+  - docker build -t razvantodea14/multi-nginx ./nginx
+  - docker build -t razvantodea14/multi-server ./server
+  - docker build -t razvantodea14/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID"  --password-stdin
+
+  - docker push razvantodea14/multi-client
+  - docker push razvantodea14/multi-nginx
+  - docker push razvantodea14/multi-server
+  - docker push razvantodea14/multi-worker
